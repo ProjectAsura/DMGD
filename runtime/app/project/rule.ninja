@@ -1,0 +1,6 @@
+lcc = "..\..\..\external\gbdk\bin\lcc.exe"
+lcc_flags = -Wa-l -Wl-m
+rule compile
+    command = $lcc -c $in -o $out
+rule link
+    command = $lcc $lcc_flags -o $out $in
