@@ -107,7 +107,7 @@ namespace sasuke
 
                 if (!File.Exists(ninjaExe))
                 {
-                    Console.Error.WriteLine("Error : ninja.exe not found.");
+                    Console.Error.WriteLine($"Error : ninja.exe not found. path={ninjaExe}");
                     return;
                 }
 
