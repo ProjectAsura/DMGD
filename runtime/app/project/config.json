@@ -1,11 +1,28 @@
 {
-  "ninja_path": "../../../external/ninja/ninja.exe",
-  "input_dir": "../src",
-  "output_dir": "../bin",
-  "target_name": "sample.gb",
-  "include_dirs": [ "../include" ],
-  "defines": [],
-  "emulator_path": "../../../external/bgb/bgb64.exe",
-  "compiler_path": "../../../external/gbdk/bin/lcc.exe",
-  "compile_option": "-Wa-l -Wl-m -Wl-j"
+  "configuration" : [
+    {
+      "tag" : "debug",
+      "ninja_path": "../../../external/ninja/ninja.exe",
+      "input_dir": "../src",
+      "output_dir": "../bin/debug",
+      "target_name": "sample.gb",
+      "include_dirs": [ "../include" ],
+      "defines": ["DEBUG"],
+      "emulator_path": "../../../external/bgb/bgb64.exe",
+      "compiler_path": "../../../external/gbdk/bin/lcc.exe",
+      "compile_option": "-Wa-l -Wl-m -Wl-j -debug"
+    },
+    {
+      "tag" : "release",
+      "ninja_path": "../../../external/ninja/ninja.exe",
+      "input_dir": "../src",
+      "output_dir": "../bin/release",
+      "target_name": "sample.gb",
+      "include_dirs": [ "../include" ],
+      "defines": ["NDEBUG"],
+      "emulator_path": "../../../external/bgb/bgb64.exe",
+      "compiler_path": "../../../external/gbdk/bin/lcc.exe",
+      "compile_option": "-Wa-l -Wl-m -Wl-j"
+    }
+  ]
 }

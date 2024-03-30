@@ -3,8 +3,10 @@ using System.Text.Json.Serialization;
 
 namespace sasuke
 {
-    public class BuildConfig
+    public class Configuration
     {
+        [JsonPropertyName("tag")]
+        public string Tag { get; set; }
         /// <summary>
         /// Ninja.exe へのfileパス.
         /// </summary>
@@ -58,10 +60,11 @@ namespace sasuke
         /// </summary>
         [JsonPropertyName("include_dirs")]
         public List<string> IncludeDirs { get; set; }
+    }
 
-        /// <summary>
-        /// デバッグビルドフラグ.
-        /// </summary>
-        public bool Debug { get; set; }
+    public class BuildConfig
+    {
+        [JsonPropertyName("configuration")]
+        public List<Configuration> Configurations { get; set; }
     }
 }

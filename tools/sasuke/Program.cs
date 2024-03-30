@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
+using System.Linq;
 
 namespace sasuke
 {
@@ -31,18 +32,31 @@ namespace sasuke
             {
                 var commandType = Enum.Parse<CommandType>(args[0], true);
                 var configPath  = Path.GetFullPath(args[1]);
-                bool debug      = (args.Length >= 3 && args[2] == "debug");
+                var configName = (args.Length >= 3) ? args[2] : "";
 
-                var config = LoadConfig(configPath);
-                if (config == null)
+                var buildConfig = LoadConfig(configPath);
+                if (buildConfig == null)
                 {
                     Console.Error.Write($"Error : Configuration File Loade Failed. path = {configPath}");
+                    ShowArgs(args);
                     return;
                 }
 
-                var appendPath = debug ? "debug" : "release";
-                config.Debug     = debug;
-                config.OutputDir = Path.Combine(config.OutputDir, appendPath);
+                Configuration config = null;
+                foreach(var c in buildConfig.Configurations)
+                {
+                    if (c.Tag == configName)
+                    {
+                        config = c;
+                        break;
+                    }
+                }
+                if (config == null)
+                {
+                    Console.Error.WriteLine($"Error : Invalid configuration name = {configName}.");
+                    ShowArgs(args);
+                    return;
+                }
 
                 switch (commandType)
                 {
@@ -100,7 +114,7 @@ namespace sasuke
             }
         }
 
-        static private void Build(BuildConfig config)
+        static private void Build(Configuration config)
         {
             var dir = Directory.GetCurrentDirectory();
 
@@ -154,13 +168,13 @@ namespace sasuke
             }
         }
 
-        static private void Rebuild(BuildConfig config)
+        static private void Rebuild(Configuration config)
         {
             Clean(config);
             Build(config);
         }
 
-        static private void Clean(BuildConfig config)
+        static private void Clean(Configuration config)
         {
             try
             {
@@ -198,11 +212,12 @@ namespace sasuke
             }
         }
 
-        static private void Run(BuildConfig config)
+        static private void Run(Configuration config)
         {
             var outputDir = Path.GetFullPath(config.OutputDir);
             var args = "-rom " + Path.Combine(outputDir, config.TargetName);
-            _ = Process.Start(Path.GetFullPath(config.EmulatorPath), args);
+            var cmd = Path.GetFullPath(config.EmulatorPath);
+            _ = Process.Start(cmd, args);
         }
 
         static private void ShowHelp()
@@ -217,12 +232,19 @@ namespace sasuke
             Console.WriteLine("[debug]   : デバッグビルドする際は指定します.");
         }
 
+        static private void ShowArgs(string[] args)
+        {
+            for(int i=0; i<args.Length; ++i)
+            {
+                Console.WriteLine($"args[{i}] : {args[i]}");
+            }
+        }
         static private string[] CollectSources(string path)
         {
             return Directory.GetFiles(path, "*.c", SearchOption.AllDirectories);
         }
 
-        static string CreateDefines(BuildConfig config)
+        static string CreateDefines(Configuration config)
         {
             if (config.Defines == null || config.Defines.Count == 0)
             { return ""; }
@@ -241,7 +263,7 @@ namespace sasuke
             return builder.ToString();
         }
 
-        static string CreateIncludeDirs(BuildConfig config)
+        static string CreateIncludeDirs(Configuration config)
         {
             if (config.IncludeDirs == null || config.IncludeDirs.Count == 0)
             { return ""; }
@@ -262,7 +284,7 @@ namespace sasuke
             return builder.ToString();
         }
 
-        static bool CreateNinjaFile(BuildConfig config, string[] files)
+        static bool CreateNinjaFile(Configuration config, string[] files)
         {
             if (files.Length == 0)
                 return false;
@@ -271,16 +293,14 @@ namespace sasuke
             var builder  = new StringBuilder();
             var defines  = CreateDefines(config);
             var includes = CreateIncludeDirs(config);
-            var debugFlg = config.Debug ? "debug" : "";
 
             var lccPath = CorrectPath(config.CompilerPath);
             builder.AppendLine($"lcc = {lccPath}");
             builder.AppendLine($"lcc_flags = {config.CompileOption}");
             builder.AppendLine($"defines = {defines}");
             builder.AppendLine($"include_dirs = {includes}");
-            builder.AppendLine($"configuration = {debugFlg}");
             builder.AppendLine("rule compile");
-            builder.AppendLine("    command = $lcc $lcc_flags $defines $include_dirs $configuration -c $in -o $out");
+            builder.AppendLine("    command = $lcc $lcc_flags $defines $include_dirs -c $in -o $out");
             builder.AppendLine("rule link");
             builder.AppendLine("    command = $lcc $lcc_flags -o $out $in");
             builder.AppendLine($"# Compile {files.Length} Files.");
@@ -311,7 +331,7 @@ namespace sasuke
             return p;
         }
 
-        static string GetObjectPath(string path, BuildConfig config)
+        static string GetObjectPath(string path, Configuration config)
         {
             var objName   = Path.GetFullPath(path);
             var inputDir  = Path.GetFullPath(config.InputDir) + "\\";
