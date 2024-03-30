@@ -1,9 +1,9 @@
 {
-  "NinjaPath": "../../../external/ninja/ninja.exe",
-  "InputDir": "../src",
-  "OutputDir": "../bin/debug",
-  "OutputName": "sample.gb",
-  "EmulatorPath": "../../../external/bgb/bgb64.exe",
-  "CompilerPath": "../../../external/gbdk/bin/lcc.exe",
-  "CompileOption": "-Wa-l -Wl-m -Wl-j"
+  "ninja_path": "../../../external/ninja/ninja.exe",
+  "input_dir": "../src",
+  "output_dir": "../bin",
+  "target_name": "sample.gb",
+  "emulator_path": "../../../external/bgb/bgb64.exe",
+  "compiler_path": "../../../external/gbdk/bin/lcc.exe",
+  "compile_option": "-Wa-l -Wl-m -Wl-j"
 }

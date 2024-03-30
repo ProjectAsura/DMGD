@@ -30,7 +30,8 @@ namespace sasuke
             try
             {
                 var commandType = Enum.Parse<CommandType>(args[0], true);
-                var configPath = Path.GetFullPath(args[1]);
+                var configPath  = Path.GetFullPath(args[1]);
+                bool debug      = (args.Length >= 3 && args[2] == "debug");
 
                 var config = LoadConfig(configPath);
                 if (config == null)
@@ -38,6 +39,10 @@ namespace sasuke
                     Console.Error.Write($"Error : Configuration File Loade Failed. path = {configPath}");
                     return;
                 }
+
+                var appendPath = debug ? "debug" : "release";
+                config.Debug     = debug;
+                config.OutputDir = Path.Combine(config.OutputDir, appendPath);
 
                 switch (commandType)
                 {
@@ -83,7 +88,7 @@ namespace sasuke
                     Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
                     WriteIndented = true,
                 };
-                using var file = File.OpenRead(path);
+                using var file   = File.OpenRead(path);
                 using var stream = new StreamReader(file, Encoding.UTF8);
                 var data = stream.ReadToEnd();
                 return JsonSerializer.Deserialize<BuildConfig>(data, option);
@@ -196,19 +201,20 @@ namespace sasuke
         static private void Run(BuildConfig config)
         {
             var outputDir = Path.GetFullPath(config.OutputDir);
-            var args = "-rom " + Path.Combine(outputDir, config.OutputName);
+            var args = "-rom " + Path.Combine(outputDir, config.TargetName);
             _ = Process.Start(Path.GetFullPath(config.EmulatorPath), args);
         }
 
         static private void ShowHelp()
         {
-            Console.WriteLine("sasuke.exe <command> <config>");
+            Console.WriteLine("sasuke.exe <config> <command> (debug)");
             Console.WriteLine("[command] : ビルドコマンドを指定します. 以下のコマンドが指定可能です.");
             Console.WriteLine("            - Build   ビルド処理を実行します.");
             Console.WriteLine("            - Rebuild リビルド処理を実行します.");
             Console.WriteLine("            - Clean   クリーン処理を実行します.");
             Console.WriteLine("            - Run     出力ファイルを実行します.");
             Console.WriteLine("[config]  : 設定ファイルパスを指定します.");
+            Console.WriteLine("[debug]   : デバッグビルドする際は指定します.");
         }
 
         static private string[] CollectSources(string path)
@@ -216,19 +222,63 @@ namespace sasuke
             return Directory.GetFiles(path, "*.c", SearchOption.AllDirectories);
         }
 
+        static string CreateDefines(BuildConfig config)
+        {
+            if (config.Defines == null || config.Defines.Count == 0)
+            { return ""; }
+
+            var builder = new StringBuilder();
+            var appendSpace = false;
+            foreach(var def in config.Defines)
+            {
+                if (appendSpace)
+                { builder.Append(" "); }
+
+                builder.Append($"-D{def}");
+                if (!appendSpace)
+                { appendSpace = true; }
+            }
+            return builder.ToString();
+        }
+
+        static string CreateIncludeDirs(BuildConfig config)
+        {
+            if (config.IncludeDirs == null || config.IncludeDirs.Count == 0)
+            { return ""; }
+
+            var builder = new StringBuilder();
+            var appendSpace = false;
+            foreach(var inc in config.IncludeDirs)
+            {
+                if (appendSpace)
+                { builder.Append(" "); }
+
+                builder.Append($"-I{inc}");
+                if (!appendSpace)
+                { appendSpace = true; }
+            }
+            return builder.ToString();
+        }
+
         static bool CreateNinjaFile(BuildConfig config, string[] files)
         {
             if (files.Length == 0)
                 return false;
 
-            var sources = new StringBuilder();
-            var builder = new StringBuilder();
+            var sources  = new StringBuilder();
+            var builder  = new StringBuilder();
+            var defines  = CreateDefines(config);
+            var includes = CreateIncludeDirs(config);
+            var debugFlg = config.Debug ? "debug" : "";
 
             var lccPath = CorrectPath(config.CompilerPath);
             builder.AppendLine($"lcc = {lccPath}");
             builder.AppendLine($"lcc_flags = {config.CompileOption}");
+            builder.AppendLine($"defines = {defines}");
+            builder.AppendLine($"include_dirs = {includes}");
+            builder.AppendLine($"configuration = {debugFlg}");
             builder.AppendLine("rule compile");
-            builder.AppendLine("    command = $lcc $lcc_flags -c $in -o $out");
+            builder.AppendLine("    command = $lcc $lcc_flags $defines $include_dirs $configuration -c $in -o $out");
             builder.AppendLine("rule link");
             builder.AppendLine("    command = $lcc $lcc_flags -o $out $in");
             builder.AppendLine($"# Compile {files.Length} Files.");
@@ -240,7 +290,7 @@ namespace sasuke
                 builder.AppendLine($"build {objName}: compile {srcName}");
             }
             builder.AppendLine("# Link");
-            builder.AppendLine($"build {config.OutputName}: link {sources}");
+            builder.AppendLine($"build {config.TargetName}: link {sources}");
 
             var outputDir = Path.GetFullPath(config.OutputDir);
             var buildNinjaPath = Path.Combine(outputDir, "build.ninja");
