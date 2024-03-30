@@ -253,7 +253,9 @@ namespace sasuke
                 if (appendSpace)
                 { builder.Append(" "); }
 
-                builder.Append($"-I{inc}");
+                var path = CorrectPath(inc);
+
+                builder.Append($"-I{path}");
                 if (!appendSpace)
                 { appendSpace = true; }
             }

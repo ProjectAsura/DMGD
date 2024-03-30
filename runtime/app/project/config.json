@@ -3,6 +3,8 @@
   "input_dir": "../src",
   "output_dir": "../bin",
   "target_name": "sample.gb",
+  "include_dirs": [ "../include" ],
+  "defines": [],
   "emulator_path": "../../../external/bgb/bgb64.exe",
   "compiler_path": "../../../external/gbdk/bin/lcc.exe",
   "compile_option": "-Wa-l -Wl-m -Wl-j"
