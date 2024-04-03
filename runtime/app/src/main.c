@@ -6,8 +6,38 @@
 #include <gb/gb.h>
 
 
-void main()
+
+/*---------------------------------------------------------------------------*/
+/*  Forward Declarations                                                     */
+/*---------------------------------------------------------------------------*/
+void Init(void);
+void Frame(void);
+
+/* メインエントリーポイント. */
+void main(void)
 {
-    printf("HELLO WORLD!!");
+    DISPLAY_OFF;
+
+    Init();
+    SHOW_BKG;
+    DISPLAY_ON;
+
+    while(true)
+    {
+        g_JoyPad = joypad();
+        Frame();
+        vsync();
+    }
 }
 
+/* 初期化処理. */
+void Init(void)
+{
+
+}
+
+/* フレーム処理. */
+void Frame(void)
+{
+
+}
