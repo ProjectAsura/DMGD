@@ -11,7 +11,7 @@
 /*  Forward Declarations                                                     */
 /*---------------------------------------------------------------------------*/
 void Init(void);
-void Frame(void);
+bool Frame(void);
 
 /* メインエントリーポイント. */
 void main(void)
@@ -24,9 +24,8 @@ void main(void)
 
     while(true)
     {
-        g_JoyPad = joypad();
-        Frame();
-        vsync();
+        if (Frame())
+        { vsync(); }
     }
 }
 
@@ -36,8 +35,8 @@ void Init(void)
 
 }
 
-/* フレーム処理. */
-void Frame(void)
+/* フレーム処理. 再描画が必要な場合は true を返却. */
+bool Frame(void)
 {
-
+    return true;
 }

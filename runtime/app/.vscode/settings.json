@@ -4,4 +4,8 @@
         "${workspaceFolder}\\include",
         "${workspaceFolder}\\..\\..\\external\\gbdk\\include"
     ],
+    "files.associations": {
+        "stdbool.h": "c",
+        "gb.h": "c"
+    },
 }

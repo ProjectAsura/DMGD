@@ -1,3 +1,8 @@
+/*
+    File   : typedef.h
+    Desc   : Type Defintions.
+    Author : Pocol.
+*/
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
@@ -15,4 +20,4 @@ typedef unsigned short u16;
 typedef signed int     s32;
 typedef unsigned int   u32;
 
-#endif/*TYPEDEF_H*/
+#endif/* TYPEDEF_H */

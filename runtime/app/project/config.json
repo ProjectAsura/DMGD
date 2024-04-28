@@ -10,7 +10,7 @@
       "defines": ["DEBUG"],
       "emulator_path": "../../../external/bgb/bgb64.exe",
       "compiler_path": "../../../external/gbdk/bin/lcc.exe",
-      "compile_option": "-Wa-l -Wl-m -Wl-j -debug"
+      "compile_option": "-Wa-l -Wl-m -Wl-j -debug -Wm-yn\"TEST\""
     },
     {
       "tag" : "release",
@@ -22,7 +22,7 @@
       "defines": ["NDEBUG"],
       "emulator_path": "../../../external/bgb/bgb64.exe",
       "compiler_path": "../../../external/gbdk/bin/lcc.exe",
-      "compile_option": "-Wa-l -Wl-m -Wl-j"
+      "compile_option": "-Wa-l -Wl-m -Wl-j -Wm-yn\"TEST\""
     }
   ]
 }
