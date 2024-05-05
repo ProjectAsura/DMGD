@@ -94,13 +94,13 @@ struct CartridgeHeader
     uint8_t     Logo[48];               //!< 任天堂ロゴ.
     uint8_t     Title[15];              //!< タイトル名.
     uint8_t     GBCFlag;                //!< ゲームボーイカラーフラグ.
-    uint8_t     NewLicenseeCode[2];     //!< ライセンシーコード.
+    uint8_t     NewLicenseeCode[2];     //!< ライセンシーコード(新).
     uint8_t     SGBFlag;                //!< スーパーゲームボーイフラグ.
     uint8_t     CartridgeType;          //!< カートリッジタイプ.
     uint8_t     RomSize;                //!< ROMサイズ.
     uint8_t     RamSize;                //!< RAMサイズ.
     uint8_t     DestinationCode;        //!< リージョンコード.
-    uint8_t     OldLicenseeCode;        //!< 古いライセンシーコード.
+    uint8_t     OldLicenseeCode;        //!< ライセンシーコード(旧).
     uint8_t     MaskRomVersion;         //!< ROMバージョン.
     uint8_t     HeaderCheckSum;         //!< ヘッダーチェックサム.
     uint8_t     GlobalCheckSum[2];      //!< グローバルチェックサム.
