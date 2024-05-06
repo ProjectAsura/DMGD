@@ -9,6 +9,7 @@
 // Includes
 //-----------------------------------------------------------------------------
 #include <cstdint>
+#include <mem.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -24,6 +25,9 @@ public:
 
     Ppu() = default;
 
+    void Execute() {}
+    void SetMemory(Memory* value) { m_Memory = value; }
+
 private:
-    uint8_t     m_Vram[8 * 1024] = {};
+    Memory*     m_Memory = nullptr;
 };

@@ -32,6 +32,8 @@ public:
     void MountRomBank0(const uint8_t* data, uint32_t sizeInBytes);
     void MountRomBank1(const uint8_t* data, uint32_t sizeInBytes);
 
+    const uint8_t* GetBuffer() const { return m_Buffer; }
+
 private:
     uint8_t*    m_Buffer        = nullptr;
     uint32_t    m_SizeInBytes   = 0;

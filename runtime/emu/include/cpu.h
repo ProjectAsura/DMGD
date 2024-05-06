@@ -9,25 +9,8 @@
 // Includes
 //-----------------------------------------------------------------------------
 #include <cstdint>
-#include <array>
 #include <mem.h>
 
-
-class Cpu;
-using CpuAction = void (Cpu::*)(uint8_t);
-
-
-struct Command
-{
-    uint8_t     OpCode;
-    uint8_t     Bytes;
-    uint8_t     Cycles;
-    CpuAction   Action;
-
-    // 以下, デバッグ用途.
-    const char* Instruction;
-    const char* Operands;
-};
 
 inline uint16_t ToU16(uint8_t hiWord, uint8_t loWord)
 {
@@ -51,11 +34,11 @@ public:
     {
         struct
         {
-            uint8_t Unused  : 4;    // Unused.
-            uint8_t C       : 1;    // Carry Flag.
-            uint8_t H       : 1;    // Half Carry Flag.
-            uint8_t N       : 1;    // Subtract Flag.
-            uint8_t Z       : 1;    // Zero Flag.
+            uint8_t Reserved : 4;    // Unused.
+            uint8_t C        : 1;    // Carry Flag.
+            uint8_t H        : 1;    // Half Carry Flag.
+            uint8_t N        : 1;    // Subtract Flag.
+            uint8_t Z        : 1;    // Zero Flag.
         };
         uint8_t Value;
     };
@@ -84,60 +67,90 @@ public:
 
     Cpu() = default;
 
-    uint8_t GetA() const { return m_Register.A; }
-    uint8_t GetF() const { return m_Register.F.Value; }
-    uint8_t GetB() const { return m_Register.B; }
-    uint8_t GetC() const { return m_Register.C; }
-    uint8_t GetD() const { return m_Register.D; }
-    uint8_t GetE() const { return m_Register.E; }
-    uint8_t GetH() const { return m_Register.H; }
-    uint8_t GetL() const { return m_Register.L; }
-    uint16_t GetAF() const { return ToU16(m_Register.A, m_Register.F.Value); }
-    uint16_t GetBC() const { return ToU16(m_Register.B, m_Register.C); }
-    uint16_t GetDE() const { return ToU16(m_Register.D, m_Register.E); }
-    uint16_t GetHL() const { return ToU16(m_Register.H, m_Register.L); }
-    bool GetFlagZ() const { return !!m_Register.F.Z; }
-    bool GetFlagN() const { return !!m_Register.F.N; }
-    bool GetFlagH() const { return !!m_Register.F.H; }
-    bool GetFlagC() const { return !!m_Register.F.C; }
+    inline uint8_t GetA() const { return m_Register.A; }
+    inline uint8_t GetF() const { return m_Register.F.Value; }
+    inline uint8_t GetB() const { return m_Register.B; }
+    inline uint8_t GetC() const { return m_Register.C; }
+    inline uint8_t GetD() const { return m_Register.D; }
+    inline uint8_t GetE() const { return m_Register.E; }
+    inline uint8_t GetH() const { return m_Register.H; }
+    inline uint8_t GetL() const { return m_Register.L; }
+    inline uint16_t GetAF() const { return ToU16(m_Register.A, m_Register.F.Value); }
+    inline uint16_t GetBC() const { return ToU16(m_Register.B, m_Register.C); }
+    inline uint16_t GetDE() const { return ToU16(m_Register.D, m_Register.E); }
+    inline uint16_t GetHL() const { return ToU16(m_Register.H, m_Register.L); }
+    inline uint16_t GetSP() const { return m_Register.SP; }
+    inline uint16_t GetPC() const { return m_Register.PC; }
+    inline bool GetFlagZ() const { return !!m_Register.F.Z; }
+    inline bool GetFlagN() const { return !!m_Register.F.N; }
+    inline bool GetFlagH() const { return !!m_Register.F.H; }
+    inline bool GetFlagC() const { return !!m_Register.F.C; }
 
-    void SetA(uint8_t value) { m_Register.A = value; }
-    void SetF(uint8_t value) { m_Register.F.Value = value; }
-    void SetB(uint8_t value) { m_Register.B = value; }
-    void SetC(uint8_t value) { m_Register.C = value; }
-    void SetD(uint8_t value) { m_Register.D = value; }
-    void SetE(uint8_t value) { m_Register.E = value; }
-    void SetH(uint8_t value) { m_Register.H = value; }
-    void SetL(uint8_t value) { m_Register.L = value; }
-    void SetAF(uint16_t value) { FromU16(m_Register.A, m_Register.F.Value, value); }
-    void SetBC(uint16_t value) { FromU16(m_Register.B, m_Register.C, value); }
-    void SetDE(uint16_t value) { FromU16(m_Register.D, m_Register.E, value); }
-    void SetHL(uint16_t value) { FromU16(m_Register.H, m_Register.L, value); }
-    void SetFlagZ(bool value) { m_Register.F.Z = value ? 1 : 0; }
-    void SetFlagN(bool value) { m_Register.F.N = value ? 1 : 0; }
-    void SetFlagH(bool value) { m_Register.F.H = value ? 1 : 0; }
-    void SetFlagC(bool value) { m_Register.F.C = value ? 1 : 0; }
+    inline void SetA(uint8_t value) { m_Register.A = value; }
+    inline void SetF(uint8_t value) { m_Register.F.Value = value; }
+    inline void SetB(uint8_t value) { m_Register.B = value; }
+    inline void SetC(uint8_t value) { m_Register.C = value; }
+    inline void SetD(uint8_t value) { m_Register.D = value; }
+    inline void SetE(uint8_t value) { m_Register.E = value; }
+    inline void SetH(uint8_t value) { m_Register.H = value; }
+    inline void SetL(uint8_t value) { m_Register.L = value; }
+    inline void SetAF(uint16_t value) { FromU16(m_Register.A, m_Register.F.Value, value); }
+    inline void SetBC(uint16_t value) { FromU16(m_Register.B, m_Register.C, value); }
+    inline void SetDE(uint16_t value) { FromU16(m_Register.D, m_Register.E, value); }
+    inline void SetHL(uint16_t value) { FromU16(m_Register.H, m_Register.L, value); }
+    inline void SetSP(uint16_t value) { m_Register.SP = value; }
+    inline void SetPC(uint16_t value) { m_Register.PC = value; }
+    inline void SetFlagZ(bool value) { m_Register.F.Z = value ? 1 : 0; }
+    inline void SetFlagN(bool value) { m_Register.F.N = value ? 1 : 0; }
+    inline void SetFlagH(bool value) { m_Register.F.H = value ? 1 : 0; }
+    inline void SetFlagC(bool value) { m_Register.F.C = value ? 1 : 0; }
 
-    bool IsEnableColor() const { return m_EnableColor; }
-    bool IsEnableSuper() const { return m_EnableSuper; }
+    inline bool IsEnableColor() const { return m_EnableColor; }
+    inline bool IsEnableSuper() const { return m_EnableSuper; }
+
+    inline uint8_t GetConsumedCycles() const { return m_ConsumedCycles; }
+
+    inline void SetMemory(Memory* memory) { m_Memory = memory; }
 
     void Execute(); // 命令を実行する.
 
-    uint8_t GetConsumedCycles() const { return m_ConsumedCycles; }
-
-    void SetMemory(Memory* memory) { m_Memory = memory; }
-
 private:
-    static std::array<Command, 256> s_Commands;
-    static std::array<Command, 256> s_PrefixCommands;
-
     Register    m_Register          = {};
     Timer       m_Timer             = {};
     bool        m_EnableColor       = false;
     bool        m_EnableSuper       = false;
     bool        m_EnablePowerSave   = false;
+    bool        m_EnableInterrputs  = false;
     uint8_t     m_ConsumedCycles    = 0;
     Memory*     m_Memory            = nullptr;
 
-    const Command& GetCommand(uint16_t address);
+    void ExecuteCommand(uint8_t opCode);
+    void ExecutePrefixCommand(uint8_t opCode);
+    void SetCarry(uint8_t lhs, uint8_t rhs);
+    void SetBorrow(uint8_t lhs, uint8_t rhs);
+
+    // 8-Bit Arithmetic
+    void Add(uint8_t& lhs, uint8_t rhs);
+    void Adc(uint8_t& lhs, uint8_t rhs);
+    void Sub(uint8_t& lhs, uint8_t rhs);
+    void Sbc(uint8_t& lhs, uint8_t rhs);
+    void And(uint8_t val);
+    void Or(uint8_t val);
+    void Xor(uint8_t val);
+    void Cmp(uint8_t val);
+    void Inc(uint8_t& val);
+    void Dec(uint8_t& val);
+
+    // 16-Bit Arithmetic
+    void AddHL(uint16_t val);
+    void AddSP(int8_t val);
+    // Inc.
+    // Dec.
+
+    // Miscellaneous
+    void Swap(uint8_t& val);
+    // Daa
+    // Cpl
+    // Ccf
+    // Scf
 };

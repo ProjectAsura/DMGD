@@ -88,6 +88,7 @@
     <ClInclude Include="..\include\emu.h" />
     <ClInclude Include="..\include\mem.h" />
     <ClInclude Include="..\include\ppu.h" />
+    <ClInclude Include="..\src\cpu_cmds.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

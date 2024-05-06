@@ -14,5 +14,7 @@ class Apu
 public:
     Apu() = default;
 
+    void Execute() {}
+
 private:
 };

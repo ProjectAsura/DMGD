@@ -12,12 +12,8 @@
 #include <cpu.h>
 #include <ppu.h>
 #include <apu.h>
+#include <mem.h>
 #include <cartridge.h>
-
-//-----------------------------------------------------------------------------
-// Type Definitions.
-//-----------------------------------------------------------------------------
-using JoyPad = uint8_t;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,13 +22,22 @@ using JoyPad = uint8_t;
 class Emulator
 {
 public:
-    Emulator() = default;
+    Emulator () = default;
+    ~Emulator() = default;
 
-    void Run();
+    bool Init();
+    void Term();
+    void Update();
+
+    const Memory& GetMemory() const { return m_Memory; }
+    void SetRom(const Cartridge* rom);
+    void SetJoyPad(uint8_t value);
 
 private:
-    Cpu     m_CPU       = {};
-    Ppu     m_PPU       = {};
-    Apu     m_APU       = {};
-    JoyPad  m_JoyPad    = {};
+    Cpu                 m_CPU       = {};
+    Ppu                 m_PPU       = {};
+    Apu                 m_APU       = {};
+    Memory              m_Memory    = {};
+    const Cartridge*    m_ROM       = nullptr;
 };
+
