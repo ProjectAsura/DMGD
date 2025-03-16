@@ -42,38 +42,44 @@ static_assert(sizeof(CartridgeHeader) == 0x50); // 0x100 - 0x14F.
 bool LoadCartridge(const char* path, Cartridge** cartridge)
 {
     assert(path != nullptr);
-    assert(*cartridge != nullptr);
+    assert(cartridge != nullptr);
 
-    FILE* fp = nullptr;
-    auto err = fopen_s(&fp, path, "rb");
-    if (err != 0)
+    uint8_t* binary = nullptr;
+    int64_t  size   = 0;
+
+    // ファイル読み込み.
     {
-        printf_s("Error : Load Cartridge Failed. path = %s\n", path);
-        return false;
-    }
+        FILE* fp = nullptr;
+        auto err = fopen_s(&fp, path, "rb");
+        if (err != 0)
+        {
+            printf_s("Error : Load Cartridge Failed. path = %s\n", path);
+            return false;
+        }
 
-    fseek(fp, CARTRIDGE_HEADER_OFFSET, SEEK_SET);
-    auto cur = ftell(fp);
-    fseek(fp, 0, SEEK_END);
-    auto end = ftell(fp);
-    fseek(fp, CARTRIDGE_HEADER_OFFSET, SEEK_SET);
+        fseek(fp, CARTRIDGE_HEADER_OFFSET, SEEK_SET);
+        auto cur = ftell(fp);
+        fseek(fp, 0, SEEK_END);
+        auto end = ftell(fp);
+        fseek(fp, CARTRIDGE_HEADER_OFFSET, SEEK_SET);
 
-    auto size = end - cur;
-    assert(size > 0);
+        auto size = end - cur;
+        assert(size > 0);
 
-    auto buf = static_cast<uint8_t*>(malloc(size));
-    if (buf == nullptr)
-    {
+        binary = static_cast<uint8_t*>(malloc(size));
+        if (binary == nullptr)
+        {
+            fclose(fp);
+            printf_s("Error : Out of Memory.\n");
+            return false;
+        }
+
+        fread(binary, size, 1, fp);
         fclose(fp);
-        printf_s("Error : Out of Memory.\n");
-        return false;
     }
 
-    auto rom = reinterpret_cast<Cartridge*>(buf);
+    auto rom = reinterpret_cast<Cartridge*>(binary);
     assert(rom != nullptr);
-
-    fread(rom, size, 1, fp);
-    fclose(fp);
 
     // ロゴチェック.
     if (memcmp(rom->Header.Logo, kNintendoLogo, sizeof(kNintendoLogo) != 0))
@@ -87,7 +93,7 @@ bool LoadCartridge(const char* path, Cartridge** cartridge)
     {
         uint8_t checkSum = 0;
         for(uint8_t i=0x34; i<=0x4C; ++i)
-        { checkSum = checkSum - buf[i] - 1; }
+        { checkSum = checkSum - binary[i] - 1; }
 
         if (checkSum != rom->Header.HeaderCheckSum)
         {

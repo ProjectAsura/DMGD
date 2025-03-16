@@ -92,6 +92,42 @@ void Memory::Write16(uint16_t address, uint16_t value)
     memcpy(m_Buffer + address, &value, sizeof(value));
 }
 
+void Memory::Inc8(uint16_t address)
+{
+    assert(m_Buffer != nullptr);
+    assert(address < m_SizeInBytes);
+    assert(address >= 0x8000);  // ROM領域を除く.
+    auto& val = m_Buffer[address];
+    val++;
+}
+
+void Memory::Inc16(uint16_t address)
+{
+    assert(m_Buffer != nullptr);
+    assert(address < m_SizeInBytes);
+    assert(address >= 0x8000);  // ROM領域を除く.
+    uint16_t* val = reinterpret_cast<uint16_t*>(m_Buffer+ address);
+    (*val)++;
+}
+
+void Memory::Dec8(uint16_t address)
+{
+    assert(m_Buffer != nullptr);
+    assert(address < m_SizeInBytes);
+    assert(address >= 0x8000);  // ROM領域を除く.
+    auto& val = m_Buffer[address];
+    val--;
+}
+
+void Memory::Dec16(uint16_t address)
+{
+    assert(m_Buffer != nullptr);
+    assert(address < m_SizeInBytes);
+    assert(address >= 0x8000);  // ROM領域を除く.
+    uint16_t* val = reinterpret_cast<uint16_t*>(m_Buffer + address);
+    (*val)--;
+}
+
 //-----------------------------------------------------------------------------
 //      ROMバンク0にマウントします.
 //-----------------------------------------------------------------------------

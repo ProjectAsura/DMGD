@@ -13,9 +13,7 @@
 
 
 inline uint16_t ToU16(uint8_t hiWord, uint8_t loWord)
-{
-    return uint16_t(hiWord << 8) | uint16_t(loWord); 
-}
+{ return uint16_t(hiWord << 8) | uint16_t(loWord); }
 
 inline void FromU16(uint8_t& hiWord, uint8_t& loWord, uint16_t value)
 {
@@ -110,7 +108,19 @@ public:
 
     inline uint8_t GetConsumedCycles() const { return m_ConsumedCycles; }
 
-    inline void SetMemory(Memory* memory) { m_Memory = memory; }
+    inline uint8_t  Read8 (uint16_t address) const { return m_pMemory->Read8 (address); }
+    inline uint16_t Read16(uint16_t address) const { return m_pMemory->Read16(address); }
+
+    inline void Write8 (uint16_t address, uint8_t  value) { m_pMemory->Write8 (address, value); }
+    inline void Write16(uint16_t address, uint16_t value) { m_pMemory->Write16(address, value); }
+
+    inline void Inc8 (uint16_t address) { m_pMemory->Inc8 (address); }
+    inline void Inc16(uint16_t address) { m_pMemory->Inc16(address); }
+
+    inline void Dec8 (uint16_t address) { m_pMemory->Dec8 (address); }
+    inline void Dec16(uint16_t address) { m_pMemory->Dec16(address); }
+
+    inline void SetMemory(Memory* memory) { m_pMemory = memory; }
 
     void Execute(); // 命令を実行する.
 
@@ -122,35 +132,83 @@ private:
     bool        m_EnablePowerSave   = false;
     bool        m_EnableInterrputs  = false;
     uint8_t     m_ConsumedCycles    = 0;
-    Memory*     m_Memory            = nullptr;
+    Memory*     m_pMemory           = nullptr;
 
     void ExecuteCommand(uint8_t opCode);
     void ExecutePrefixCommand(uint8_t opCode);
-    void SetCarry(uint8_t lhs, uint8_t rhs);
-    void SetBorrow(uint8_t lhs, uint8_t rhs);
 
-    // 8-Bit Arithmetic
-    void Add(uint8_t& lhs, uint8_t rhs);
-    void Adc(uint8_t& lhs, uint8_t rhs);
-    void Sub(uint8_t& lhs, uint8_t rhs);
-    void Sbc(uint8_t& lhs, uint8_t rhs);
-    void And(uint8_t val);
-    void Or(uint8_t val);
-    void Xor(uint8_t val);
-    void Cmp(uint8_t val);
-    void Inc(uint8_t& val);
-    void Dec(uint8_t& val);
+    uint8_t  n () const;
+    uint16_t nn() const;
 
-    // 16-Bit Arithmetic
-    void AddHL(uint16_t val);
-    void AddSP(int8_t val);
-    // Inc.
-    // Dec.
+
+    // 8-Bit Loads
+    void LD (uint8_t& lhs, uint8_t  rhs);
+
+    // 16-Bit Loads
+    void LD (uint16_t& lhs, uint16_t rhs);
+    void LDHL(uint16_t addr);
+    void PUSH(uint16_t value);
+    void POP (uint16_t value);
+
+    // 8-Bit ALU
+    void ADD(uint8_t& lhs, uint8_t rhs);
+    void ADC(uint8_t& lhs, uint8_t rhs);
+    void SUB(uint8_t& lhs, uint8_t rhs);
+    void SBC(uint8_t& lhs, uint8_t rhs);
+    void AND(uint8_t& lhs, uint8_t rhs);
+    void OR (uint8_t& lhs, uint8_t rhs);
+    void XOR(uint8_t& lhs, uint8_t rhs);
+    void CP (uint8_t& lhs, uint8_t rhs);
+    void INC(uint8_t& val);
+    void DEC(uint8_t& val);
+
+    // 16-Bit Artithmetic
+    void ADD(uint16_t& lhs, uint16_t rhs);
+    void INC(uint16_t& val);
+    void DEC(uint16_t& val);
 
     // Miscellaneous
-    void Swap(uint8_t& val);
-    // Daa
-    // Cpl
-    // Ccf
-    // Scf
+    void SWAP(uint8_t& lhs, uint8_t& rhs);
+    void DAA();
+    void CPL();
+    void CCF();
+    void SCF();
+    void NOP();
+    void HALT();
+    void STOP();
+    void DI();
+    void EI();
+
+    // Rotates & Shifts
+    void RLCA();
+    void RLA();
+    void RRCA();
+    void RRA();
+    void RLC(uint8_t& lhs, uint8_t rhs);
+    void RL (uint8_t& lhs, uint8_t rhs);
+    void RRC(uint8_t& lhs, uint8_t rhs);
+    void RR (uint8_t& lhs, uint8_t rhs);
+    void SLA(uint8_t& lhs, uint8_t rsh);
+    void SAR(uint8_t& lhs, uint8_t rhs);
+    void SRL(uint8_t& lhs, uint8_t rhs);
+
+    // Bit OpCodes.
+    void BIT(uint8_t& lhs, uint8_t rhs);
+    void SET(uint8_t& lhs, uint8_t rhs);
+    void RES(uint8_t& lhs, uint8_t rhs);
+
+    // Jumps
+    void JP(bool flag, uint8_t  addr);
+    void JP(bool flag, uint16_t addr);
+
+    // Calls
+    void CALL(bool flag, uint16_t addr);
+
+    // Restarts
+    void RST(uint8_t addr);
+
+    // Returns.
+    void RET(bool flag);
+    void RETI();
+  
 };

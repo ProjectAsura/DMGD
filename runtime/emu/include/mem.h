@@ -29,6 +29,12 @@ public:
     void Write8 (uint16_t address, uint8_t  value);
     void Write16(uint16_t address, uint16_t value);
 
+    void Inc8 (uint16_t address);
+    void Inc16(uint16_t address);
+
+    void Dec8 (uint16_t address);
+    void Dec16(uint16_t address);
+
     void MountRomBank0(const uint8_t* data, uint32_t sizeInBytes);
     void MountRomBank1(const uint8_t* data, uint32_t sizeInBytes);
 
