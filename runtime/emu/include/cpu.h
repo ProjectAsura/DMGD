@@ -43,16 +43,44 @@ public:
 
     struct Register
     {
-        uint8_t         B     = 0;  //!< Bレジスタ.
-        uint8_t         C     = 0;  //!< Cレジスタ.
-        uint8_t         D     = 0;  //!< Dレジスタ.
-        uint8_t         E     = 0;  //!< Eレジスタ.
-        uint8_t         H     = 0;  //!< Hレジスタ.
-        uint8_t         L     = 0;  //!< Lレジスタ.
-        uint8_t         A     = 0;  //!< アキュムレータ.
-        FlagRegister    F     = {}; //!< フラグレジスタ.
-        uint16_t        SP    = 0;  //!< スタックポインタ.
-        uint16_t        PC    = 0;  //!< プログラムカウンター.
+        union 
+        {
+            struct 
+            {
+                uint8_t B;  //!< Bレジスタ.
+                uint8_t C;  //!< Cレジスタ.
+            };
+            uint16_t    BC = 0;
+        };
+        union 
+        {
+            struct
+            {
+                uint8_t D;  //!< Dレジスタ.
+                uint8_t E;  //!< Eレジスタ.
+            };
+            uint16_t DE = 0;
+        };
+        union
+        {
+            struct 
+            {
+                uint8_t H;  //!< Hレジスタ.
+                uint8_t L;  //!< Lレジスタ.
+            };
+            uint16_t HL = 0;
+        };
+        union
+        {
+            struct
+            {
+                uint8_t         A;  //!< アキュムレータ.
+                FlagRegister    F;  //!< フラグレジスタ.
+            };
+            uint16_t AF = 0;
+        };
+        uint16_t    SP    = 0;  //!< スタックポインタ.
+        uint16_t    PC    = 0;  //!< プログラムカウンター.
     };
 
     struct Timer
@@ -73,10 +101,10 @@ public:
     inline uint8_t GetE() const { return m_Register.E; }
     inline uint8_t GetH() const { return m_Register.H; }
     inline uint8_t GetL() const { return m_Register.L; }
-    inline uint16_t GetAF() const { return ToU16(m_Register.A, m_Register.F.Value); }
-    inline uint16_t GetBC() const { return ToU16(m_Register.B, m_Register.C); }
-    inline uint16_t GetDE() const { return ToU16(m_Register.D, m_Register.E); }
-    inline uint16_t GetHL() const { return ToU16(m_Register.H, m_Register.L); }
+    inline uint16_t GetAF() const { return m_Register.AF; }
+    inline uint16_t GetBC() const { return m_Register.BC; }
+    inline uint16_t GetDE() const { return m_Register.DE; }
+    inline uint16_t GetHL() const { return m_Register.HL; }
     inline uint16_t GetSP() const { return m_Register.SP; }
     inline uint16_t GetPC() const { return m_Register.PC; }
     inline bool GetFlagZ() const { return !!m_Register.F.Z; }
@@ -92,16 +120,18 @@ public:
     inline void SetE(uint8_t value) { m_Register.E = value; }
     inline void SetH(uint8_t value) { m_Register.H = value; }
     inline void SetL(uint8_t value) { m_Register.L = value; }
-    inline void SetAF(uint16_t value) { FromU16(m_Register.A, m_Register.F.Value, value); }
-    inline void SetBC(uint16_t value) { FromU16(m_Register.B, m_Register.C, value); }
-    inline void SetDE(uint16_t value) { FromU16(m_Register.D, m_Register.E, value); }
-    inline void SetHL(uint16_t value) { FromU16(m_Register.H, m_Register.L, value); }
+    inline void SetAF(uint16_t value) { m_Register.AF = value; }
+    inline void SetBC(uint16_t value) { m_Register.BC = value; }
+    inline void SetDE(uint16_t value) { m_Register.DE = value; }
+    inline void SetHL(uint16_t value) { m_Register.HL = value; }
     inline void SetSP(uint16_t value) { m_Register.SP = value; }
     inline void SetPC(uint16_t value) { m_Register.PC = value; }
     inline void SetFlagZ(bool value) { m_Register.F.Z = value ? 1 : 0; }
     inline void SetFlagN(bool value) { m_Register.F.N = value ? 1 : 0; }
     inline void SetFlagH(bool value) { m_Register.F.H = value ? 1 : 0; }
     inline void SetFlagC(bool value) { m_Register.F.C = value ? 1 : 0; }
+    inline void CheckZero(uint8_t  val) { if (val == 0) { m_Register.F.Z = 1; } }
+    inline void CheckZero(uint16_t val) { if (val == 0) { m_Register.F.Z = 1; } }
 
     inline bool IsEnableColor() const { return m_EnableColor; }
     inline bool IsEnableSuper() const { return m_EnableSuper; }
@@ -140,15 +170,17 @@ private:
     uint8_t  n () const;
     uint16_t nn() const;
 
+    void Carry (uint8_t lhs, uint8_t rhs);
+    void Borrow(uint8_t lhs, uint8_t rhs);
 
     // 8-Bit Loads
-    void LD (uint8_t& lhs, uint8_t  rhs);
+    void LD(uint8_t& lhs, uint8_t rhs);
 
     // 16-Bit Loads
-    void LD (uint16_t& lhs, uint16_t rhs);
-    void LDHL(uint16_t addr);
-    void PUSH(uint16_t value);
-    void POP (uint16_t value);
+    void LD  (uint16_t& lhs, uint16_t rhs);
+    void LDHL(uint16_t  lhs,  uint8_t  rhs);
+    void PUSH(uint16_t  val);
+    void POP (uint16_t& val);
 
     // 8-Bit ALU
     void ADD(uint8_t& lhs, uint8_t rhs);
@@ -158,7 +190,7 @@ private:
     void AND(uint8_t& lhs, uint8_t rhs);
     void OR (uint8_t& lhs, uint8_t rhs);
     void XOR(uint8_t& lhs, uint8_t rhs);
-    void CP (uint8_t& lhs, uint8_t rhs);
+    void CP (uint8_t  lhs, uint8_t rhs);
     void INC(uint8_t& val);
     void DEC(uint8_t& val);
 
@@ -169,15 +201,15 @@ private:
 
     // Miscellaneous
     void SWAP(uint8_t& lhs, uint8_t& rhs);
-    void DAA();
-    void CPL();
-    void CCF();
-    void SCF();
-    void NOP();
+    void DAA ();
+    void CPL ();
+    void CCF ();
+    void SCF ();
+    void NOP ();
     void HALT();
     void STOP();
-    void DI();
-    void EI();
+    void DI  ();
+    void EI  ();
 
     // Rotates & Shifts
     void RLCA();
