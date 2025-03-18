@@ -24,11 +24,16 @@ bool Emulator::Init()
 
     m_ROM = nullptr;
 
+    if (!InitWnd())
+    { return false; }
+
     return true;
 }
 
 void Emulator::Term()
 {
+    TermWnd();
+
     m_CPU.SetMemory(nullptr);
     m_PPU.SetMemory(nullptr);
 
@@ -37,10 +42,12 @@ void Emulator::Term()
 
 void Emulator::Update()
 {
-    // GameBoy更新.
+    // GameBoy更新処理.
     m_CPU.Execute();
     m_PPU.Execute();
     m_APU.Execute();
+
+    // フレームバッファを描画.
 }
 
 void Emulator::SetRom(const Cartridge* rom)
@@ -50,3 +57,27 @@ void Emulator::SetRom(const Cartridge* rom)
 void Emulator::SetJoyPad(uint8_t value)
 {
 }
+
+void Emulator::Run()
+{
+    if (Init())
+    { MainLoop(); }
+
+    Term();
+}
+
+#if PLATFORM_WIN64
+bool Emulator::InitWnd()
+{
+    return false;
+}
+
+void Emulator::TermWnd()
+{
+}
+
+void Emulator::MainLoop()
+{
+
+}
+#endif

@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
+#define PLATFORM_WIN64 (1)
+
 //-----------------------------------------------------------------------------
 // Includes
 //-----------------------------------------------------------------------------
@@ -14,6 +16,10 @@
 #include <apu.h>
 #include <mem.h>
 #include <cartridge.h>
+
+#if PLATFORM_WIN64
+#include <Windows.h>
+#endif//PLATFORM_WIN64
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -25,9 +31,7 @@ public:
     Emulator () = default;
     ~Emulator() = default;
 
-    bool Init();
-    void Term();
-    void Update();
+    void Run();
 
     const Memory& GetMemory() const { return m_Memory; }
     void SetRom(const Cartridge* rom);
@@ -39,5 +43,20 @@ private:
     Apu                 m_APU       = {};
     Memory              m_Memory    = {};
     const Cartridge*    m_ROM       = nullptr;
+
+#if PLATFORM_WIN64
+    HINSTANCE m_hInst = nullptr;
+    HWND      m_hWnd  = nullptr;
+#endif
+
+
+    bool InitWnd ();
+    void TermWnd ();
+    void MainLoop();
+
+    bool Init();
+    void Term();
+    void Update();
+
 };
 
