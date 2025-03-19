@@ -29,5 +29,7 @@ int main(int argc, char** argv)
 {
     test();
 
+    Emulator().Run();
+
     return 0;
 }
