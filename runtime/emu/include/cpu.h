@@ -161,6 +161,7 @@ private:
     bool        m_EnableSuper       = false;
     bool        m_EnablePowerSave   = false;
     bool        m_EnableInterrputs  = false;
+    bool        m_Stop              = false;
     uint8_t     m_ConsumedCycles    = 0;
     Memory*     m_pMemory           = nullptr;
 
@@ -172,6 +173,8 @@ private:
 
     void Carry (uint8_t lhs, uint8_t rhs);
     void Borrow(uint8_t lhs, uint8_t rhs);
+
+    void Carry(uint16_t lhs, uint16_t rhs);
 
     // 8-Bit Loads
     void LD(uint8_t& lhs, uint8_t rhs);
@@ -200,7 +203,7 @@ private:
     void DEC(uint16_t& val);
 
     // Miscellaneous
-    void SWAP(uint8_t& lhs, uint8_t& rhs);
+    void SWAP(uint8_t& val);
     void DAA ();
     void CPL ();
     void CCF ();

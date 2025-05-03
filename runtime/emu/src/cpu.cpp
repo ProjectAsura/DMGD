@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 #include <cpu.h>
 
-// Game Boy CPU Manual Page.89まで実装.
+// Game Boy CPU Manual Page.98まで実装.
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,12 @@ void Cpu::ExecuteCommand(uint8_t opCode)
 {
     switch(opCode)
     {
-    case 0x00: {} break;
+    // NOP
+    case 0x00:
+    {
+        NOP();
+        m_ConsumedCycles += 4;
+    } break;
     // LD BC,nn
     case 0x01:
     {
@@ -50,10 +55,15 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD (BC),A
     case 0x02:
     {
-        Write8(GetBC(), m_Register.A);
+        Write8(m_Register.BC, m_Register.A);
         m_ConsumedCycles += 8;
     } break;
-    case 0x03: {} break;
+    // INC BC
+    case 0x03:
+    {
+        INC(m_Register.BC);
+        m_ConsumedCycles += 8;
+    } break;
     // INC B
     case 0x04: 
     {
@@ -83,10 +93,15 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD A,(BC)
     case 0x0A:
     {
-        LD(m_Register.A, Read8(GetBC()));
+        LD(m_Register.A, Read8(m_Register.BC));
         m_ConsumedCycles += 8;
     } break;
-    case 0x0B: {} break;
+    // DEC BC
+    case 0x0B:
+    {
+        DEC(m_Register.BC);
+        m_ConsumedCycles += 8;
+    } break;
     // INC C
     case 0x0C:
     {
@@ -119,10 +134,15 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD (DE),A
     case 0x12:
     {
-        Write8(GetDE(), m_Register.A);
+        Write8(m_Register.DE, m_Register.A);
         m_ConsumedCycles += 8;
     } break;
-    case 0x13: {} break;
+    // INC DE
+    case 0x13:
+    {
+        INC(m_Register.DE);
+        m_ConsumedCycles += 8;
+    } break;
     // INC D
     case 0x14:
     {
@@ -147,10 +167,15 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD A,(DE)
     case 0x1A:
     {
-        LD(m_Register.A, Read8(GetDE()));
+        LD(m_Register.A, Read8(m_Register.DE));
         m_ConsumedCycles += 8;
     } break;
-    case 0x1B: {} break;
+    // DEC DE
+    case 0x1B:
+    {
+        DEC(m_Register.DE);
+        m_ConsumedCycles += 8;
+    } break;
     // INC E
     case 0x1C:
     {
@@ -181,11 +206,16 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LDI (HL),A
     case 0x22:
     {
-        Write8(GetHL(), m_Register.A);
-        Inc8(GetHL());
+        Write8(m_Register.HL, m_Register.A);
+        Inc8(m_Register.HL);
         m_ConsumedCycles += 8;
     } break;
-    case 0x23: {} break;
+    // INC HL
+    case 0x23:
+    {
+        INC(m_Register.HL);
+        m_ConsumedCycles += 8;
+    } break;
     // INC H
     case 0x24:
     {
@@ -204,17 +234,27 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         LD(m_Register.H, n());
         m_ConsumedCycles += 8;
     } break;
-    case 0x27: {} break;
+    // DAA
+    case 0x27:
+    {
+        DAA();
+        m_ConsumedCycles += 4;
+    } break;
     case 0x28: {} break;
     case 0x29: {} break;
     // LDI A,(HL)
     case 0x2A:
     {
-        LD(m_Register.A, Read8(GetHL()));
+        LD(m_Register.A, Read8(m_Register.HL));
         Inc8(GetHL());
         m_ConsumedCycles +=8;
     } break;
-    case 0x2B: {} break;
+    // DEC HL
+    case 0x2B:
+    {
+        DEC(m_Register.HL);
+        m_ConsumedCycles += 8;
+    } break;
     // INC L
     case 0x2C:
     {
@@ -233,7 +273,12 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         LD(m_Register.L, n());
         m_ConsumedCycles += 8;
     } break;
-    case 0x2F: {} break;
+    // CPL
+    case 0x2F:
+    {
+        CPL();
+        m_ConsumedCycles += 4;
+    } break;
 
     //-------------------------------------------------------------------------
 
@@ -246,7 +291,12 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         Dec8(GetHL());
         m_ConsumedCycles += 8;
     } break;
-    case 0x33: {} break;
+    // INC SP
+    case 0x33:
+    {
+        INC(m_Register.SP);
+        m_ConsumedCycles += 8;
+    } break;
     // INC (HL).
     case 0x34:
     {
@@ -266,20 +316,32 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD (HL),n
     case 0x36:
     {
-        Write8(GetHL(), n());
+        Write8(m_Register.HL, n());
         m_ConsumedCycles += 12;
     } break;
-    case 0x37: {} break;
-    case 0x38: {} break;
+    // SCF
+    case 0x37:
+    {
+        SCF();
+        m_ConsumedCycles += 4;
+    } break;
+    case 0x38:
+    {
+    } break;
     case 0x39: {} break;
     // LDD A,(HL)
     case 0x3A:
     {
-        LD(m_Register.A, Read8(GetHL()));
-        Dec8(GetHL());
+        LD(m_Register.A, Read8(m_Register.HL));
+        Dec8(m_Register.HL);
         m_ConsumedCycles += 8;
     } break;
-    case 0x3B: {} break;
+    // DEC SP
+    case 0x3B:
+    {
+        DEC(m_Register.SP);
+        m_ConsumedCycles += 8;
+    } break;
     // INC A
     case 0x3C:
     {
@@ -291,7 +353,12 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     case 0x3E:
     {
     } break;
-    case 0x3F: {} break;
+    // CCF
+    case 0x3F: 
+    {
+        CCF();
+        m_ConsumedCycles += 4;
+    } break;
 
     //-------------------------------------------------------------------------
 
@@ -335,7 +402,7 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD B,(HL)
     case 0x46:
     {
-        LD(m_Register.B, Read8(GetHL()));
+        LD(m_Register.B, Read8(m_Register.HL));
         m_ConsumedCycles += 8;
     } break;
     // LD B,A
@@ -383,7 +450,7 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD C,(HL)
     case 0x4E:
     {
-        LD(m_Register.C, Read8(GetHL()));
+        LD(m_Register.C, Read8(m_Register.HL));
         m_ConsumedCycles += 8;
     } break;
     // LD C,A
@@ -434,7 +501,7 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD D, (HL)
     case 0x56:
     {
-        LD(m_Register.D, Read8(GetHL()));
+        LD(m_Register.D, Read8(m_Register.HL));
         m_ConsumedCycles += 8;
     } break;
     // LD D,A
@@ -479,10 +546,10 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         LD(m_Register.E, m_Register.L);
         m_ConsumedCycles += 4;
     } break;
-    // LD E, (HL)
+    // LD E,(HL)
     case 0x5E:
     {
-        LD(m_Register.E, Read8(GetHL()));
+        LD(m_Register.E, Read8(m_Register.HL));
         m_ConsumedCycles += 8;
     } break;
     // LD E,A
@@ -596,44 +663,49 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD (HL),B
     case 0x70:
     {
-        Write8(GetHL(), m_Register.B);
+        Write8(m_Register.HL, m_Register.B);
         m_ConsumedCycles += 8;
     } break;
     // LD (HL),C
     case 0x71:
     {
-        Write8(GetHL(), m_Register.C);
+        Write8(m_Register.HL, m_Register.C);
         m_ConsumedCycles += 8;
     } break;
     // LD (HL),D
     case 0x72:
     {
-        Write8(GetHL(), m_Register.D);
+        Write8(m_Register.HL, m_Register.D);
         m_ConsumedCycles += 8;
     } break;
     // LD (HL),E
     case 0x73:
     {
-        Write8(GetHL(), m_Register.E);
+        Write8(m_Register.HL, m_Register.E);
         m_ConsumedCycles += 8;
     } break;
     // LD (HL),H
     case 0x74:
     {
-        Write8(GetHL(), m_Register.H);
+        Write8(m_Register.HL, m_Register.H);
         m_ConsumedCycles += 8;
     } break;
     // LD (HL),L
     case 0x75:
     {
-        Write8(GetHL(), m_Register.L);
+        Write8(m_Register.HL, m_Register.L);
         m_ConsumedCycles += 8;
     } break;
-    case 0x76: {} break;
+    // HALT
+    case 0x76:
+    {
+        HALT();
+        m_ConsumedCycles += 4;
+    } break;
     // LD (HL),A
     case 0x77:
     {
-        Write8(GetHL(), m_Register.A);
+        Write8(m_Register.HL, m_Register.A);
         m_ConsumedCycles += 8;
     } break;
     // LD A,B
@@ -675,7 +747,7 @@ void Cpu::ExecuteCommand(uint8_t opCode)
     // LD A,(HL)
     case 0x7E:
     {
-        LD(m_Register.A, Read8(GetHL()));
+        LD(m_Register.A, Read8(m_Register.HL));
         m_ConsumedCycles += 8;
     } break;
     // LD A,A
@@ -1125,7 +1197,7 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         m_ConsumedCycles += 12;
     } break;
     case 0xD2: {} break;
-    case 0xD3: {} break;
+    case 0xD3: { /* DO_NOTHING */ } break;
     case 0xD4: {} break;
     // PUSH DE
     case 0xD5:
@@ -1140,12 +1212,12 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         m_ConsumedCycles += 8;
     } break;
     case 0xD7: {} break;
-    case 0xD8: {} break;
+    case 0xD8: { /* DO_NOTHING */ } break;
     case 0xD9: {} break;
     case 0xDA: {} break;
     case 0xDB: {} break;
     case 0xDC: {} break;
-    case 0xDD: {} break;
+    case 0xDD: { /* DO_NOTHING */ } break;
     // SBC A,#
     case 0xDE:
     {
@@ -1174,22 +1246,31 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         Write8(0xFF + m_Register.C, m_Register.A);
         m_ConsumedCycles += 8;
     } break;
-    case 0xE3: {} break;
-    case 0xE4: {} break;
+    case 0xE3:
+    { /* DO_NOTHING */ }
+    break;
+    case 0xE4:
+    { /* DO_NOTHING */ }
+    break;
     // PUSH HL
     case 0xE5:
     {
         PUSH(m_Register.HL);
         m_ConsumedCycles += 16;
     } break;
-    // AND A,#
+    // AND A,n
     case 0xE6:
     {
         AND(m_Register.A, n());
         m_ConsumedCycles += 8;
     } break;
     case 0xE7: {} break;
-    case 0xE8: {} break;
+    // ADD SP,n
+    case 0xE8:
+    {
+        ADD(m_Register.SP, n());
+        m_ConsumedCycles += 16;
+    } break;
     case 0xE9: {} break;
     // LD (nn), A
     case 0xEA:
@@ -1197,10 +1278,16 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         Write16(nn(), m_Register.A);
         m_ConsumedCycles += 16;
     } break;
-    case 0xEB: {} break;
-    case 0xEC: {} break;
-    case 0xED: {} break;
-    // XOR A,#
+    case 0xEB:
+    { /* DO_NOTHING */ }
+    break;
+    case 0xEC:
+    { /* DO_NOTHING */ }
+    break;
+    case 0xED:
+    { /* DO_NOTHING */ }
+    break;
+    // XOR A,n
     case 0xEE:
     {
         XOR(m_Register.A, n());
@@ -1227,8 +1314,15 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         LD(m_Register.A, Read8(m_Register.C));
         m_ConsumedCycles += 8;
     } break;
-    case 0xF3: {} break;
-    case 0xF4: {} break;
+    // DI
+    case 0xF3:
+    {
+        DI();
+        m_ConsumedCycles += 4;
+    } break;
+    case 0xF4:
+    { /* DO_NOTHING */ }
+    break;
     // PUSH AF
     case 0xF5:
     {
@@ -1260,10 +1354,19 @@ void Cpu::ExecuteCommand(uint8_t opCode)
         LD(m_Register.A, Read8(nn()));
         m_ConsumedCycles += 16;
     } break;
-    case 0xFB: {} break;
-    case 0xFC: {} break;
-    case 0xFD: {} break;
-    // CP A,#
+    // EI
+    case 0xFB:
+    {
+        EI();
+        m_ConsumedCycles += 4;
+    } break;
+    case 0xFC:
+    { /* DO_NOTHING */ }
+    break;
+    case 0xFD:
+    { /* DO_NOTHING */ }
+    break;
+    // CP A,n
     case 0xFE:
     {
         CP(m_Register.A, n());
@@ -1334,14 +1437,56 @@ void Cpu::ExecutePrefixCommand(uint8_t opCode)
     case 0x2E: {} break;
     case 0x2F: {} break;
 
-    case 0x30: {} break;
-    case 0x31: {} break;
-    case 0x32: {} break;
-    case 0x33: {} break;
-    case 0x34: {} break;
-    case 0x35: {} break;
-    case 0x36: {} break;
-    case 0x37: {} break;
+    // SWAP B
+    case 0x30:
+    {
+        SWAP(m_Register.B);
+        m_ConsumedCycles += 8;
+    } break;
+    // SWAP C
+    case 0x31:
+    {
+        SWAP(m_Register.C);
+        m_ConsumedCycles += 8;
+    } break;
+    // SWAP D
+    case 0x32:
+    {
+        SWAP(m_Register.D);
+        m_ConsumedCycles += 8;
+    } break;
+    // SWAP E
+    case 0x33:
+    {
+        SWAP(m_Register.E);
+        m_ConsumedCycles += 8;
+    } break;
+    // SWAP H
+    case 0x34:
+    {
+        SWAP(m_Register.H);
+        m_ConsumedCycles += 8;
+    } break;
+    // SWAP L
+    case 0x35:
+    {
+        SWAP(m_Register.L);
+        m_ConsumedCycles += 8;
+    } break;
+    // SWAP (HL)
+    case 0x36:
+    {
+        auto val = Read8(m_Register.HL);
+        SWAP(val);
+        Write8(m_Register.HL, val);
+        m_ConsumedCycles += 16;
+    } break;
+    // SWAP A
+    case 0x37:
+    {
+        SWAP(m_Register.A);
+        m_ConsumedCycles += 8;
+    } break;
     case 0x38: {} break;
     case 0x39: {} break;
     case 0x3A: {} break;
@@ -1582,6 +1727,13 @@ void Cpu::Borrow(uint8_t lhs, uint8_t rhs)
     m_Register.C = borrowC;
 }
 
+void Cpu::Carry(uint16_t lhs, uint16_t rhs)
+{
+    m_Register.H = !!(((lhs & 0xFFF) + (rhs & 0xFFF)) & 0x1000);
+    m_Register.C = !!((lhs + rhs) & 0x10000);
+}
+
+
 //=============================================================================
 // 8-Bit Load.
 //=============================================================================
@@ -1707,59 +1859,79 @@ void Cpu::DEC(uint8_t& val)
 //=============================================================================
 void Cpu::ADD(uint16_t& lhs, uint16_t rhs)
 {
+    lhs += rhs;
+    m_Register.F.Z = 0;
+    m_Register.F.N = 0;
+    Carry(lhs, rhs);
 }
 
 void Cpu::INC(uint16_t& val)
-{
-}
+{ val++; }
 
 void Cpu::DEC(uint16_t& val)
-{
-}
+{ val--; }
 
 
 //=============================================================================
 // Miscellaneous.
 //=============================================================================
-void Cpu::SWAP(uint8_t& lhs, uint8_t& rhs)
+void Cpu::SWAP(uint8_t& dst)
 {
+    const auto val = dst;
+    dst = ((val & 0xF) << 4) | ((val & 0xF0) >> 4);
+    CheckZero(dst);
+    m_Register.F.N = 0;
+    m_Register.F.H = 0;
+    m_Register.F.C = 0;
 }
 
 void Cpu::DAA()
 {
+    // TODO
+    CheckZero(m_Register.A);
+    m_Register.F.H = 0;
+    //m_Register.F.C =;
 }
 
 void Cpu::CPL()
 {
+    m_Register.A = ~m_Register.A;
+    m_Register.F.N = 0;
+    m_Register.F.H = 0;
 }
 
 void Cpu::CCF()
 {
+    m_Register.F.C = !!(m_Register.C) ? 0 : 1;
+    m_Register.F.N = 0;
+    m_Register.F.H = 0;
 }
 
 void Cpu::SCF()
 {
+    m_Register.F.N = 0;
+    m_Register.F.H = 0;
+    m_Register.F.C = 1;
 }
 
 void Cpu::NOP()
-{
-}
+{ /* DO_NOTHING */ }
 
 void Cpu::HALT()
 {
+    if (m_EnableInterrputs)
+    {
+    }
 }
 
 void Cpu::STOP()
-{
-}
+{ m_Stop = true; }
 
 void Cpu::DI()
-{
-}
+{ m_EnableInterrputs = false; }
 
 void Cpu::EI()
-{
-}
+{ m_EnableInterrputs = true; }
 
 //=============================================================================
 // Rotates & Shifts.
@@ -1767,18 +1939,58 @@ void Cpu::EI()
 
 void Cpu::RLCA()
 {
+    auto val  = (m_Register.A & 0x80);
+    auto bit7 = !!val;
+
+    m_Register.A << 1;
+    m_Register.A |= (val >> 7);
+
+    CheckZero(m_Register.A);
+    m_Register.F.N = 0;
+    m_Register.F.H = 0;
+    m_Register.F.C = (bit7) ? 1 : 0;
 }
 
 void Cpu::RLA()
 {
+    auto val  = m_Register.F.C;
+    auto bit7 = !!(m_Register.A & 0x80);
+
+    m_Register.A << 1;
+    m_Register.A |= val;
+
+    CheckZero(m_Register.A);
+    m_Register.F.N = 0;
+    m_Register.F.H = 0;
+    m_Register.F.C = (bit7) ? 1 : 0;
 }
 
 void Cpu::RRCA()
 {
+    auto val  = m_Register.A & 0x1;
+    auto bit0 = !!(val);
+
+    m_Register.A >> 1;
+    m_Register.A |= (val << 7);
+
+    CheckZero(m_Register.A);
+    m_Register.F.N = 0;
+    m_Register.F.H = 0;
+    m_Register.F.C = (bit0) ? 1 : 0;
 }
 
 void Cpu::RRA()
 {
+    auto val  = m_Register.A & 0x1;
+    auto bit0 = !!val;
+
+    m_Register.A >> 1;
+    m_Register.A |= (val << 7);
+
+    CheckZero(m_Register.A);
+    m_Register.F.N = 0;
+    m_Register.F.H = 0;
+    m_Register.F.C = (bit0) ? 1 : 0;
 }
 
 void Cpu::RLC(uint8_t& lhs, uint8_t rhs)
